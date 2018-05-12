@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Adventure Time - ScriptViz</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/style.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">ScriptViz - Season <span id="seasonnum">All</span> Episode <span id="epnum">All</span></a>
+        <span class="nav-link"></span>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <div class="navbar-nav ml-auto">
+            <span class="nav-link checkboxfix">Character:</span>
+            <span>
+              <input class="form-check-input custom-checkbox" type="checkbox" id="CharacterFilter">
+              <select class="custom-select" id="CharacterSelect">
+              </select>
+            </span>
+            <span class="nav-link checkboxfix">Season:</span>
+            <span>
+              <input class="form-check-input custom-checkbox" type="checkbox" id="SeasonFilter">
+              <input type="range" min="1" max="5" class="slider" id="SeasonSelect">
+            </span>
+
+            <span class="nav-link checkboxfix">Episode:</span>
+            <span>
+              <input class="form-check-input custom-checkbox" type="checkbox" id="EpisodeFilter" disabled>
+              <input type="range" min="1" max="100" class="slider" id="EpisodeSelect" disabled>
+            </span>
+          </div>
+
+
+
+          <!--<ul class="navbar-nav ml-auto">-->
+            <!--<li class="nav-item active">-->
+              <!--<a class="nav-link" href="#">Home-->
+                <!--<span class="sr-only">(current)</span>-->
+              <!--</a>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<a class="nav-link" href="#">About</a>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<a class="nav-link" href="#">Services</a>-->
+            <!--</li>-->
+            <!--<li class="nav-item">-->
+              <!--<a class="nav-link" href="#">Contact</a>-->
+            <!--</li>-->
+          <!--</ul>-->
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+      <h3>Characters by number of lines:</h3>
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div id="pieVizContainer">
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr/>
+
+    <div class="container">
+      <h3>Sentiment trendline:</h3>
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div id="sentimentPlotVizContainer">
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/d3/d3.min.js"></script>
+    <script src="vendor/dimple/dimple.latest.js"></script>
+    <script src="adventuretime-data.js"></script>
+    <script src="vendor/regression/regression.js"></script>
+    <script src="viz/pie.js"></script>
+    <script src="viz/sentimentPlot.js"></script>
+    <script src="viz/controls.js"></script>
+    <script>
+
+        $(document).ready(function(){
+
+            pie.init();
+            sentimentPlot.init();
+
+        });
+    </script>
+  </body>
+
+</html>

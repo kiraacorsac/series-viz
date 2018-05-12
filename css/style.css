@@ -1,0 +1,67 @@
+body {
+    padding-top: 54px;
+}
+@media (min-width: 992px) {
+    body {
+        padding-top: 56px;
+    }
+}
+
+.slidecontainer {
+    width: 100%; /* Width of the outside container */
+}
+
+/* The slider itself */
+.slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 36px; /* Specified height */
+    background: rgba(211, 211, 211, 0.7); /* Grey background */
+    outline: none; /* Remove outline */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+    background: rgba(211, 211, 211, 1); /* Fully shown on mouse-over */
+}
+
+.slider:disabled {
+    background: rgba(211, 211, 211, 0.3);
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    width: 25px; /* Set a specific slider handle width */
+    height: 36px; /* Slider handle height */
+    background: rgba(76, 175, 80, 0.7); /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.slider:disabled::-webkit-slider-thumb{
+    background: rgba(76, 175, 80, 0.3); /* Green background */
+}
+.slider::-moz-range-thumb {
+    width: 25px; /* Set a specific slider handle width */
+    height: 36px; /* Slider handle height */
+    background: rgba(76, 175, 80, 0.7);; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.select-selected {
+    background-color: DodgerBlue;
+}
+
+.custom-checkbox {
+    height:30px;
+    width:20px;
+}
+
+.checkboxfix{
+    margin-right: 20px;
+}
