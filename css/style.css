@@ -65,3 +65,18 @@ body {
 .checkboxfix{
     margin-right: 20px;
 }
+
+.dimple-custom-tooltip-box {
+    fill: rgba(252, 201, 142, 0.7) !important;
+    stroke: rgba(212, 151, 82,0.8) !important;
+}
+
+
+.dimple-custom-line-marker-circle{
+    stroke: rgba(212, 151, 82,0.8) !important;
+}
+
+.dimple-custom-tooltip-dropline{
+    stroke: rgba(212, 151, 82,0.8) !important;
+}
+

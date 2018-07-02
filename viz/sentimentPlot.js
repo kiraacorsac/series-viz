@@ -5,17 +5,22 @@ let sentimentVizSvg = {};
 function countSentimentEpisode(episodes, character) {
     let characterFilter = (l => character !== null ? l.Character === character : true);
     return episodes
-    //precomp order, then filter those where character has no lines
         .map((ep, i) => {
+            let rep = ep;
+            rep.order = i + 1;
+            return rep;
+        })
+        .filter(ep => ep.ScriptLines.filter(characterFilter).length > 0)
+        .map((ep) => {
         return {
-            order: i+1,
+            order: ep.order,
             epName: ep.EpisodeName,
             season: ep.Season,
             episode: ep.Episode,
             sentiment: d3.mean(ep.ScriptLines
-                .filter(characterFilter), (l => l.Sentiment.Compound)),
+                .filter(characterFilter), (l => l.Sentiment)) ,
             character: null
-            // .filter(l => l.Sentiment.Compound != 0))
+            // .filter(l => l.Sentiment != 0))
         }
     })
 }
@@ -33,7 +38,7 @@ function countSentimentLines(lines, character) {
                 order: line.realOrder,
                 character: line.Character,
                 epName: i,
-                sentiment: line.Sentiment.Compound,
+                sentiment: line.Sentiment,
                 line: line.Delivery
             }
         })
@@ -55,7 +60,6 @@ function redrawSentimentViz() {
             // sentimentViz.axes[1].overrideMin = query[0].order-1;
             // sentimentViz.axes[1].overrideMax = query[query.length - 1].order+1;
         }
-
     } else {
 
         if($('#SeasonFilter').is(":checked")){
@@ -66,16 +70,20 @@ function redrawSentimentViz() {
         query = countSentimentEpisode(query, character);
     }
 
-    let trendline = v => regression.linear(query.map(e => [e.order, e.sentiment*1000000]).filter(e => Number.isFinite(e[1]))).predict(v);
+    let trendlinePoint = (v, data) => regression
+        .linear(data.map(e => [e.order, e.sentiment*1000000])
+        .filter(e => Number.isFinite(e[1])))
+        .predict(v);
+
     let trendData = query.length > 2 ?
         [
             {
                 order: 1,
-                sentiment: trendline(1)[1]/1000000
+                sentiment: trendlinePoint(1, query)[1]/1000000
             },
             {
                 order: query.length>0 ? query[query.length-1].order : 1,
-                sentiment: trendline(query.length)[1]/1000000
+                sentiment: trendlinePoint(query.length, query)[1]/1000000
             }
         ] :
         [
@@ -87,9 +95,46 @@ function redrawSentimentViz() {
     sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke-dasharray", 5);
     sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke", "rgba(212, 151, 82,0.3)");
     sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke-width", 40);
-    sentimentVizSvg.selectAll(".dimple-marker,.dimple-marker-back").attr("r", 2);
     sentimentVizSvg.selectAll(".dimple-series-group-0").selectAll("circle").on("mouseover", () => {});
 
+    //sentimentVizSvg.selectAll(".dimple-marker,.dimple-marker-back").attr("r", 2);
+    sentimentVizSvg.selectAll(".dimple-series-group-1").selectAll("circle").style("stroke-width", 2);
+    //sentimentVizSvg.selectAll("path.dimple-series-1").style("stroke-dasharray", 1);
+
+    let max = -1;
+    let min =  1;
+    sentimentVizSvg.selectAll(".dimple-series-group-1")
+        .selectAll("circle.dimple-marker")
+        .each(node => {
+            max = Math.max(max, node.cy);
+            min = Math.min(min, node.cy);
+        })
+        .style("stroke", (node) => {
+            //Y = (X-A)/(B-A) * (D-C) + C
+            let color = ((node.cy - min)/(max-min)) * 245
+            return "rgb(255," + color + ", 66)";
+        }).style("fill", (node) => {
+        return "#FFFFFF"
+    });
+
+    let gradient = sentimentVizSvg.selectAll("linearGradient");
+
+    gradient.selectAll("stop")
+        .remove();
+
+    gradient.append("stop")
+        .attr("stop-color", "rgb(255," + 245 + ", 66)")
+        .attr("offset", "0%");
+
+    gradient.append("stop")
+        .attr("stop-color", "rgb(255," + 0 + ", 66)")
+        .attr("offset", "100%");
+
+    sentimentVizSvg.selectAll("path.dimple-series-1").style("stroke", "url(#trendline-gradient)");
+
+    sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke-dasharray", 5);
+    sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke", "rgba(212, 151, 82,0.3)");
+    sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke-width", 40);
 
 }
 
@@ -104,22 +149,25 @@ function initSentimentPlot() {
     let trendData = [
         {
             order: 1,
-            sentiment: trendline(1)[1]/1000000
+            sentiment: trendline(1)[1]/1000000,
+            epName: "start"
         },
         {
             order: sentimentPlotData[sentimentPlotData.length-1].order,
-            sentiment: trendline(sentimentPlotData.length)[1]/1000000
+            sentiment: trendline(sentimentPlotData.length)[1]/1000000,
+            epName: "end"
         }
     ];
+
     sentimentViz = new dimple.chart(sentimentVizSvg, sentimentPlotData);
-    sentimentViz.setBounds(60,30,860,360);
+    sentimentViz.setBounds(60,30,820,360);
     let a = sentimentViz.addMeasureAxis("y", "sentiment");
     a.title = "- Sentiment +";
     sentimentViz.addMeasureAxis("x", "order");
-
     let trend = sentimentViz.addSeries("order", dimple.plot.line);
     trend.data = trendData;
     let s = sentimentViz.addSeries("epName", dimple.plot.line);
+
     s.lineMarkers = true;
     s.data = sentimentPlotData;
     s.addEventHandler("click", (e => {
@@ -128,25 +176,63 @@ function initSentimentPlot() {
         if(!episodeMode){
             let selectedEp = data.reduce((eps, e) => eps.concat(e), []).find(ep => ep.EpisodeName === e.seriesValue[0]);
             $('#SeasonFilter').prop("checked", "true");
-            $('#SeasonFilter')[0].onchange();
+            OnSeasonFilterChange();
             $('#SeasonSelect').val(selectedEp.Season);
-            $('#SeasonSelect')[0].onchange();
+            OnSeasonSelectChange();
             redrawSentimentViz();
             $('#EpisodeFilter').prop("checked", "true");
-            $('#EpisodeFilter')[0].onchange();
+            OnEpisodeFilterChange();
             $('#EpisodeSelect').val(selectedEp.Episode);
-            $('#EpisodeSelect')[0].onchange();
-
+            OnEpisodeSelectChange();
             redrawSentimentViz();
         }
     }));
     sentimentViz.draw();
+
+    //sentimentVizSvg.selectAll(".dimple-marker,.dimple-marker-back").attr("r", 2);
+    sentimentVizSvg.selectAll(".dimple-series-group-1").selectAll("circle").style("stroke-width", 2);
+    //sentimentVizSvg.selectAll("path.dimple-series-1").style("stroke-dasharray", 1);
+
+    let max = -1;
+    let min =  1;
+    sentimentVizSvg.selectAll(".dimple-series-group-1")
+        .selectAll("circle.dimple-marker")
+        .each(node => {
+            max = Math.max(max, node.cy);
+            min = Math.min(min, node.cy);
+        })
+        .style("stroke", (node) => {
+            //Y = (X-A)/(B-A) * (D-C) + C
+            let color = ((node.cy - min)/(max-min)) * 245
+            return "rgb(255," + color + ", 66)";
+        }).style("fill", (node) => {
+        return "#FFFFFF"
+    });
+
+    sentimentVizSvg.selectAll(".dimple-series-group-0").selectAll("circle").on("mouseover", () => {});
+
+    let defs = sentimentVizSvg.append("defs");
+    let linearGradient = defs.append("linearGradient")
+        .attr("id", "trendline-gradient")
+        .attr("gradientUnits","objectBoundingBox")
+        .attr("x1","0%")
+        .attr("x2","0%")
+        .attr("y1", "0%")
+        .attr("y2", "100%");
+
+    linearGradient.append("stop")
+        .attr("stop-color", "rgb(255," + 245 + ", 66)")
+        .attr("offset", "0%");
+
+    linearGradient.append("stop")
+        .attr("stop-color", "rgb(255," + 0 + ", 66)")
+        .attr("offset", "100%");
+
+    sentimentVizSvg.selectAll("path.dimple-series-1").style("stroke", "url(#trendline-gradient)");
+
     sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke-dasharray", 5);
     sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke", "rgba(212, 151, 82,0.3)");
     sentimentVizSvg.selectAll("path.dimple-series-0").style("stroke-width", 40);
-    sentimentVizSvg.selectAll(".dimple-marker,.dimple-marker-back").attr("r", 2);
-
-    sentimentVizSvg.selectAll(".dimple-series-group-0").selectAll("circle").on("mouseover", () => {});
 
 
     s.getTooltipText = e => {

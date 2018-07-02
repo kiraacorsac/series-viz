@@ -46,14 +46,13 @@ function redrawPieChart() {
 
     pieChart.data = Object.values(neatPieChartData);
     pieChart.draw(500);
-    pieChart.draw();
+    pieChart.draw(); //otherwise it works bad
     pieSvg.selectAll(".dimple-others.dimple-pie").style("fill", "rgba(217, 217, 217,0.8)");
     pieSvg.selectAll(".dimple-others.dimple-pie").style("stroke", "rgba(182, 182, 182,0.8)");
     pieSvg.selectAll(".dimple-others.dimple-legend-key").style("fill", "rgba(217, 217, 217,0.8)");
     pieSvg.selectAll(".dimple-others.dimple-legend-key").style("stroke", "rgba(182, 182, 182,0.8)");
 
 }
-
 
 function initPie() {
 
@@ -62,16 +61,8 @@ function initPie() {
         .reduce((acc, val) => acc.concat(val), [])
         .map(line => line.Character);
 
-    let optimizedQuery = [];
-    for(let season = 0, seasonCount = data.length; season<seasonCount; season++ ){
-        for(let episode = 0, episodeCount = data[season].length; episode<episodeCount; episode++ ){
-            for(let line = 0, lineCount = data[season][episode].ScriptLines.length; line<lineCount; line++ ){
-                optimizedQuery.push(data[season][episode].ScriptLines[line].Character);
-            }
-        }
-    }
     pieSvg = dimple.newSvg("#pieVizContainer", 590, 400);
-    let counts = Object.values(countDifferent(optimizedQuery));
+    let counts = Object.values(countDifferent(query));
     let allPiechartData = counts.sort((a, b) => b.count - a.count);
     let neatPieChartData = allPiechartData.slice(0, 11);
     neatPieChartData[11] = allPiechartData.slice(11).reduce((acc, cur) => {
@@ -85,7 +76,6 @@ function initPie() {
     pieChart = new dimple.chart(pieSvg, neatPieChartData);
     pieChart.setBounds(20, 20, 460, 360);
     pieChart.addMeasureAxis("p", "count");
-    let grey = pieChart.defaultColors[11];
     pieChart.defaultColors = pieChart.defaultColors.slice(0, 11)
     let series = pieChart.addSeries("name", dimple.plot.pie);
     series.innerRadius = "50%";
@@ -103,10 +93,6 @@ function initPie() {
     series.addOrderRule(putOthersInTheBackRule);
 
     pieChart.addLegend(460, 20, 60, 400, "left");
-
-// let eh = "";
-// sentimentPlotData.forEach(e => {eh = eh + ("" + e.order + " " + e.sentiment + "\n" )});
-// console.log(eh);
 
 
     counts.sort((ch1, ch2) => ch1.name.localeCompare(ch2.name))

@@ -1,10 +1,10 @@
-$('#SeasonFilter')[0].onchange = function() {
+function OnSeasonFilterChange() {
     let checked = $('#SeasonFilter').is(":checked");
     $('#EpisodeFilter').prop("disabled", !checked);
     $('#EpisodeSelect').prop("disabled", !checked);
     $('#seasonnum').html(checked ? $('#SeasonSelect')[0].value : "All");
 
-    let query = data[$('#SeasonSelect')[0].valueAsNumber-1];
+    let query = data[$('#SeasonSelect')[0].valueAsNumber - 1];
     $('#EpisodeSelect').attr("max", query.length);
 
     if (!checked) {
@@ -12,50 +12,72 @@ $('#SeasonFilter')[0].onchange = function() {
         $('#EpisodeFilter')[0].onchange();
     }
 
-    pie.redraw();
-    sentimentPlot.redraw();
-};
+    redrawAll();
+}
 
-$('#SeasonSelect')[0].onchange = function() {
-    if($('#SeasonFilter').is(":checked")) {
+$('#SeasonFilter')[0].onchange = OnSeasonFilterChange;
+
+
+function OnSeasonSelectChange() {
+    if ($('#SeasonFilter').is(":checked")) {
         $('#seasonnum').html($('#SeasonSelect')[0].value);
 
-        let query = data[$('#SeasonSelect')[0].valueAsNumber-1];
+        let query = data[$('#SeasonSelect')[0].valueAsNumber - 1];
         $('#EpisodeSelect').attr("max", query.length);
-        if($('#EpisodeSelect').is(":checked")){
+        if ($('#EpisodeSelect').is(":checked")) {
             $('#epnum').html($('#EpisodeSelect')[0].value);
         }
-        pie.redraw();
-        sentimentPlot.redraw();
+        redrawAll();
     }
-};
+}
 
-$('#EpisodeFilter')[0].onchange = function () {
+$('#SeasonSelect').on("input change", OnSeasonSelectChange);
+
+function OnEpisodeFilterChange() {
     let checked = $('#EpisodeFilter').is(":checked");
     $('#epnum').html(checked ? $('#EpisodeSelect')[0].value : "All");
 
-    if($('#SeasonFilter').is(":checked")) {
-        pie.redraw();
-        sentimentPlot.redraw();
+    if ($('#SeasonFilter').is(":checked")) {
+        redrawAll();
     }
-};
+}
 
-$('#EpisodeSelect')[0].onchange = function () {
-    if($('#SeasonFilter').is(":checked") && $('#EpisodeFilter').is(":checked")) {
+$('#EpisodeFilter')[0].onchange = OnEpisodeFilterChange;
+
+function OnEpisodeSelectChange() {
+    if ($('#SeasonFilter').is(":checked") && $('#EpisodeFilter').is(":checked")) {
         $('#epnum').html($('#EpisodeSelect')[0].value);
-        pie.redraw();
-        sentimentPlot.redraw();
+        redrawAll();
     }
-};
+}
+
+$('#EpisodeSelect').on("input change", OnEpisodeSelectChange);
 
 $('#CharacterFilter')[0].onchange = function () {
-    pie.redraw();
-    sentimentPlot.redraw()
+    redrawAll();
 };
 
 $('#CharacterSelect')[0].onchange = function () {
-    if($('#CharacterFilter').is(":checked")){
-        pie.redraw();
-        sentimentPlot.redraw()
+    if($('#CharacterFilter').is(":checked")) {
+        redrawAll();
     }
 };
+
+
+function headerRedraw() {
+    let epname = "";
+    if ($('#SeasonFilter').is(":checked") && $('#EpisodeFilter').is(":checked")) {
+        epname = ": " + data[$('#SeasonSelect')[0].valueAsNumber - 1][$('#EpisodeSelect')[0].valueAsNumber - 1].EpisodeName;
+    }
+    $('#epname').html(epname);
+
+}
+
+
+
+function redrawAll() {
+    pie.redraw();
+    sentimentPlot.redraw();
+    episodeTimeline.redraw();
+    headerRedraw();
+}
